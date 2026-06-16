@@ -6,10 +6,31 @@ const { generateToken, authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
+const PASSWORD_MIN_LENGTH = 8;
+function validatePassword(password) {
+  if (!password || password.length < PASSWORD_MIN_LENGTH) {
+    return 'Password must be at least 8 characters long';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter';
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'Password must contain at least one number';
+  }
+  return null;
+}
+
 router.post('/register', (req, res) => {
   const { email, password, firstName, lastName, phone, role = 'customer' } = req.body;
   if (!email || !password || !firstName || !lastName) {
     return res.status(400).json({ error: 'Missing required fields' });
+  }
+  const pwError = validatePassword(password);
+  if (pwError) {
+    return res.status(400).json({ error: pwError });
   }
   if (!['customer', 'driver'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role for registration' });
@@ -58,6 +79,13 @@ router.put('/me', authenticate, (req, res) => {
 
 router.put('/password', authenticate, (req, res) => {
   const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Current password and new password are required' });
+  }
+  const pwError = validatePassword(newPassword);
+  if (pwError) {
+    return res.status(400).json({ error: pwError });
+  }
   const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
   if (!bcrypt.compareSync(currentPassword, user.password_hash)) {
     return res.status(400).json({ error: 'Current password is incorrect' });
