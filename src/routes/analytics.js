@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { authenticate, authorize } = require('../middleware/auth');
+const { createNotification } = require('../utils/notifications');
 
 const router = express.Router();
 
@@ -112,9 +113,7 @@ router.post('/payments', authenticate, authorize('admin'), (req, res) => {
 // Send notification
 router.post('/notifications', authenticate, authorize('admin'), (req, res) => {
   const { userId, title, message, type } = req.body;
-  const id = uuidv4();
-  db.prepare('INSERT INTO notifications (id, user_id, title, message, type) VALUES (?, ?, ?, ?, ?)')
-    .run(id, userId, title, message, type || 'info');
+  createNotification({ userId, title, message, type: type || 'info' });
   res.status(201).json({ message: 'Notification sent' });
 });
 

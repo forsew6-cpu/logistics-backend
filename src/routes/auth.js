@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { generateToken, authenticate } = require('../middleware/auth');
+const { formatUser } = require('../utils/formatters');
 
 const router = express.Router();
 
@@ -66,18 +67,5 @@ router.put('/password', authenticate, (req, res) => {
   db.prepare('UPDATE users SET password_hash = ?, updated_at = datetime(\'now\') WHERE id = ?').run(hash, req.user.id);
   res.json({ message: 'Password updated' });
 });
-
-function formatUser(u) {
-  return {
-    id: u.id,
-    email: u.email,
-    firstName: u.first_name,
-    lastName: u.last_name,
-    phone: u.phone,
-    role: u.role,
-    avatarUrl: u.avatar_url,
-    createdAt: u.created_at,
-  };
-}
 
 module.exports = router;

@@ -2,6 +2,7 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { authenticate, authorize } = require('../middleware/auth');
+const { formatUser, formatAddress } = require('../utils/formatters');
 
 const router = express.Router();
 
@@ -130,19 +131,5 @@ router.patch('/notifications/read', authenticate, (req, res) => {
   db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?').run(req.user.id);
   res.json({ message: 'All notifications marked as read' });
 });
-
-function formatUser(u) {
-  return {
-    id: u.id, email: u.email, firstName: u.first_name, lastName: u.last_name,
-    phone: u.phone, role: u.role, isActive: !!u.is_active, createdAt: u.created_at,
-  };
-}
-
-function formatAddress(a) {
-  return {
-    id: a.id, label: a.label, street: a.street, city: a.city, state: a.state,
-    postalCode: a.postal_code, country: a.country, isDefault: !!a.is_default,
-  };
-}
 
 module.exports = router;
