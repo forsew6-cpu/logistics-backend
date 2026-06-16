@@ -1,5 +1,4 @@
 require("dotenv").config();
-const bcrypt = require("bcryptjs");
 const connectDB = require("./config/db");
 const User = require("./models/User");
 const Business = require("./models/Business");
@@ -18,41 +17,41 @@ const seedData = async () => {
     ]);
 
     console.log("Creating users...");
-    const hashedPassword = await bcrypt.hash("password123", 12);
+    const plainPassword = "password123";
 
     const users = await User.create([
       {
         name: "Admin User",
         email: "admin@nearhub.com",
-        password: hashedPassword,
+        password: plainPassword,
         role: "admin",
         bio: "Platform administrator",
       },
       {
         name: "Jane Smith",
         email: "jane@example.com",
-        password: hashedPassword,
+        password: plainPassword,
         role: "user",
         bio: "Local food enthusiast and business owner",
       },
       {
         name: "Bob Wilson",
         email: "bob@example.com",
-        password: hashedPassword,
+        password: plainPassword,
         role: "user",
         bio: "Tech entrepreneur in the Bay Area",
       },
       {
         name: "Alice Johnson",
         email: "alice@example.com",
-        password: hashedPassword,
+        password: plainPassword,
         role: "user",
         bio: "Fitness lover and wellness advocate",
       },
       {
         name: "Mike Brown",
         email: "mike@example.com",
-        password: hashedPassword,
+        password: plainPassword,
         role: "user",
         bio: "Real estate agent and community builder",
       },
