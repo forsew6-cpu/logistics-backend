@@ -3,6 +3,9 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
 const { authenticate } = require('../middleware/auth');
 const { calculateQuote } = require('../utils/helpers');
+const { formatShipment } = require('../utils/formatters');
+const { createNotification } = require('../utils/notifications');
+const { createShipmentEvent } = require('../utils/events');
 
 const router = express.Router();
 
@@ -63,20 +66,25 @@ router.post('/book', authenticate, (req, res) => {
     description || null, quote.price, quote.estimatedDelivery, notes || null
   );
 
-  db.prepare('INSERT INTO shipment_events (id, shipment_id, status, location, description) VALUES (?, ?, ?, ?, ?)').run(
-    uuidv4(), shipmentId, 'confirmed', pickupCity, 'Shipment booked and confirmed'
-  );
+  createShipmentEvent({
+    shipmentId,
+    status: 'confirmed',
+    location: pickupCity,
+    description: 'Shipment booked and confirmed',
+  });
 
   db.prepare('INSERT INTO invoices (id, shipment_id, invoice_number, amount, due_date) VALUES (?, ?, ?, ?, ?)').run(
     invoiceId, shipmentId, invoiceNumber, quote.price,
     new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
   );
 
-  db.prepare('INSERT INTO notifications (id, user_id, title, message, type, link) VALUES (?, ?, ?, ?, ?, ?)').run(
-    uuidv4(), req.user.id, 'Booking Confirmed',
-    `Your shipment ${trackingNumber} has been confirmed.`, 'success',
-    `/dashboard/customer.html#shipments`
-  );
+  createNotification({
+    userId: req.user.id,
+    title: 'Booking Confirmed',
+    message: `Your shipment ${trackingNumber} has been confirmed.`,
+    type: 'success',
+    link: '/dashboard/customer.html#shipments',
+  });
 
   const shipment = db.prepare('SELECT * FROM shipments WHERE id = ?').get(shipmentId);
   res.status(201).json({
@@ -85,29 +93,5 @@ router.post('/book', authenticate, (req, res) => {
     invoice: { id: invoiceId, invoiceNumber, amount: quote.price },
   });
 });
-
-function formatShipment(s) {
-  return {
-    id: s.id,
-    trackingNumber: s.tracking_number,
-    customerId: s.customer_id,
-    driverId: s.driver_id,
-    status: s.status,
-    serviceType: s.service_type,
-    pickup: { street: s.pickup_street, city: s.pickup_city, state: s.pickup_state, postal: s.pickup_postal, country: s.pickup_country },
-    delivery: { street: s.delivery_street, city: s.delivery_city, state: s.delivery_state, postal: s.delivery_postal, country: s.delivery_country },
-    weightKg: s.weight_kg,
-    dimensions: { length: s.length_cm, width: s.width_cm, height: s.height_cm },
-    description: s.description,
-    price: s.price,
-    currency: s.currency,
-    estimatedDelivery: s.estimated_delivery,
-    actualDelivery: s.actual_delivery,
-    proofOfDeliveryUrl: s.proof_of_delivery_url,
-    notes: s.notes,
-    createdAt: s.created_at,
-    updatedAt: s.updated_at,
-  };
-}
 
 module.exports = router;
