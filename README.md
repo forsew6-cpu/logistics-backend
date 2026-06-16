@@ -8,12 +8,12 @@ Discover nearby businesses, services, events, and opportunities on an interactiv
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB Atlas with Mongoose
 - **Authentication:** JWT with bcrypt password hashing
-- **Maps:** Mapbox GL JS
+- **Maps:** OpenStreetMap + Leaflet + React Leaflet
 
 ## Features
 
 - User accounts (signup, login, profile editing, profile picture upload)
-- Interactive Mapbox map with business markers
+- Interactive OpenStreetMap map with business markers
 - Business listings with CRUD operations
 - Search & filter by name, category, distance
 - Reviews & star ratings
@@ -58,7 +58,6 @@ nearhub/
 
 - Node.js 18+
 - MongoDB Atlas account (or local MongoDB)
-- Mapbox account (for interactive maps)
 
 ### Installation
 
@@ -78,7 +77,7 @@ cp backend/.env.example backend/.env
 
 # Frontend
 cp frontend/.env.example frontend/.env.local
-# Edit frontend/.env.local with your API URL and Mapbox token
+# Edit frontend/.env.local with your API URL
 ```
 
 3. **Install dependencies**
@@ -132,7 +131,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 | `JWT_SECRET`              | Secret key for JWT signing           | Yes      |
 | `PORT`                    | Backend server port (default: 5000)  | No       |
 | `NEXT_PUBLIC_API_URL`     | Backend API URL                      | Yes      |
-| `NEXT_PUBLIC_MAPBOX_TOKEN`| Mapbox access token                  | No       |
 
 ## License
 
